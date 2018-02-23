@@ -1,4 +1,6 @@
 #include "autocompleter.h"
+#include <iostream>
+using namespace std;
 
 Autocompleter::Autocompleter()
 {
@@ -8,12 +10,7 @@ void Autocompleter::insert(string x, int freq)
 {
 	Entry cpy;
 	cpy.s = x; cpy.freq = freq;
-	if (root == nullptr)
-	{
-		root = new Node(cpy);
-		root->height = height(root) + 1;
-		return;
-	}
+	
 	insert_recurse(cpy, root);
 }
 int Autocompleter::size()
@@ -80,6 +77,15 @@ void Autocompleter::completions_recurse(string x, Node* root, vector<Entry> &T)
 }
 void Autocompleter::insert_recurse(Entry e, Node* cur)
 {
+	//Inserting if not found
+	if (root == nullptr)
+	{
+		root = new Node(e);
+		root->height = height(root) + 1;
+		return;
+	}
+
+
 	if (cur->e.s == e.s)
 		return;
 	else if (cur->e.s < e.s)
@@ -96,8 +102,6 @@ void Autocompleter::insert_recurse(Entry e, Node* cur)
 		else
 			cur->left = new Node(e);
 	}
-
-
 }
 void Autocompleter::rebalance(Node* root)
 {
@@ -105,9 +109,22 @@ void Autocompleter::rebalance(Node* root)
 }
 void Autocompleter::right_rotate(Node* root)
 {
-
+	Node* lc = root->left;
+	root->left = lc->left;
+	lc->left = lc->right;
+	lc->right = root->left;
+	root->right = lc;
+	swap(root->e, lc->e);
+	
 }
 void Autocompleter::left_rotate(Node* root)
 {
-
+	Node* rc = root->right;
+	root->right = rc->right;
+	rc->right = rc->left;
+	rc->left = root->right;
+	root->left =rc;
+	swap(root->e, rc->e);
+	
 }
+
