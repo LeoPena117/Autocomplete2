@@ -1,16 +1,18 @@
 #include "autocompleter.h"
-#include <iostream>
-using namespace std;
 
 Autocompleter::Autocompleter()
 {
-
 }
 void Autocompleter::insert(string x, int freq)
 {
 	Entry cpy;
 	cpy.s = x; cpy.freq = freq;
-	
+	if (root == nullptr)
+	{
+		root = new Node(cpy);
+		root->height = height(root) + 1;
+		return;
+	}
 	insert_recurse(cpy, root);
 }
 int Autocompleter::size()
@@ -77,54 +79,112 @@ void Autocompleter::completions_recurse(string x, Node* root, vector<Entry> &T)
 }
 void Autocompleter::insert_recurse(Entry e, Node* cur)
 {
-	//Inserting if not found
-	if (root == nullptr)
-	{
-		root = new Node(e);
-		root->height = height(root) + 1;
-		return;
-	}
-
-
 	if (cur->e.s == e.s)
 		return;
 	else if (cur->e.s < e.s)
 	{
 		if (cur->right != nullptr)
+		{
 			insert_recurse(e, cur->right);
+		}
 		else
+		{
 			cur->right = new Node(e);
+		}
 	}
 	else
 	{
 		if (cur->left != nullptr)
+		{
 			insert_recurse(e, cur->left);
+		}
 		else
+		{
 			cur->left = new Node(e);
+		}
 	}
+	if (height(cur->left) > height(cur->right))
+	{
+		cur->height = 1 + height(cur->left);
+	}
+	else
+	{
+		cur->height = 1 + height(cur->right);
+	}
+	rebalance(cur);
 }
 void Autocompleter::rebalance(Node* root)
 {
-
+	if (height(root->left) - height(root->right) == 2)
+	{
+		if (height(root->left->right) > height(root->left->left))
+		{
+			left_rotate(root->left);
+			right_rotate(root);
+		}
+		else
+		{
+			right_rotate(root);
+		}
+	}
+	if (height(root->right) - height(root->left) == 2)
+	{
+		if (height(root->right->left) > height(root->right->right))
+		{
+			right_rotate(root->right);
+			left_rotate(root);
+		}
+		else
+		{
+			left_rotate(root);
+		}
+	}
 }
+
 void Autocompleter::right_rotate(Node* root)
 {
 	Node* lc = root->left;
 	root->left = lc->left;
 	lc->left = lc->right;
-	lc->right = root->left;
+	lc->right = root->right;
 	root->right = lc;
 	swap(root->e, lc->e);
-	
+
+	if (root->left != nullptr) {
+		if (height(root->left->left) > height(root->left))
+			root->left->height = height(root->left->left) + 1;
+		if (height(root->left->right)>height(root->left))
+			root->left->height = height(root->left->right) + 1;
+	}
+
+	if (root != nullptr) {
+		if (height(root->left) > height(root))
+			root->height = height(root->left) + 1;
+		if (height(root->right)>height(root))
+			root->height = height(root->right) + 1;
+	}
 }
+
 void Autocompleter::left_rotate(Node* root)
 {
 	Node* rc = root->right;
 	root->right = rc->right;
 	rc->right = rc->left;
-	rc->left = root->right;
-	root->left =rc;
+	rc->left = root->left;
+	root->left = rc;
 	swap(root->e, rc->e);
-	
-}
 
+	if (root->right != nullptr) {
+		if (height(root->right->left) > height(root->right))
+			root->right->height = height(root->right->left) + 1;
+		if (height(root->right->right)>height(root->right))
+			root->right->height = height(root->right->right) + 1;
+	}
+
+	if (root != nullptr) {
+		if (height(root->left) > height(root))
+			root->height = height(root->left) + 1;
+		if (height(root->right)>height(root))
+			root->height = height(root->right) + 1;
+	}
+}
